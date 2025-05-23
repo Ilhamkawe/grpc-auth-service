@@ -32,6 +32,11 @@ type CheckEmailInput struct {
 }
 
 type UpdateInfoUserInput struct {
-	string     `json:"name" binding:"required"`
+	Name       string `json:"name" binding:"required"`
 	Occupation string `json:"occupation" binding:"required"`
+}
+
+type ChangePasswordInput struct {
+	ID           int
+	PasswordHash string `json:"password" binding:"required"`
 }

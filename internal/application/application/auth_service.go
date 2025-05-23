@@ -1,20 +1,25 @@
 package application
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"github.com/Ilhamkawe/grpc-auth-service/internal/adapter/database"
 	"github.com/Ilhamkawe/grpc-auth-service/internal/application/domain/auth"
 	"github.com/Ilhamkawe/grpc-auth-service/internal/port"
 	"golang.org/x/crypto/bcrypt"
+	"time"
 )
 
 type AuthService struct {
-	db port.AuthDatabasePort
+	db  port.AuthDatabasePort
+	rdb port.JwtRedisPort
 }
 
-func NewAuthService(dbPort port.AuthDatabasePort) *AuthService {
+func NewAuthService(dbPort port.AuthDatabasePort, rdbPort port.JwtRedisPort) *AuthService {
 	return &AuthService{
-		db: dbPort,
+		db:  dbPort,
+		rdb: rdbPort,
 	}
 }
 
@@ -111,11 +116,37 @@ func (s *AuthService) GetUserByID(id int) (database.User, error) {
 	return user, nil
 }
 
-func (s *AuthService) GetAllUsers() ([]database.User, error) {
-	users, err := s.db.FindAll()
+//func (s *AuthService) GetAllUsers() ([]database.User, error) {
+//	users, err := s.db.FindAll()
+//	if err != nil {
+//		return users, err
+//	}
+//
+//	return users, nil
+//}
+
+func (s *AuthService) ChangePassword(input auth.ChangePasswordInput) (database.User, error) {
+	user, err := s.db.FindByID(input.ID)
+
 	if err != nil {
-		return users, err
+		return user, err
 	}
 
-	return users, nil
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.PasswordHash), bcrypt.MinCost)
+	if err != nil {
+		return user, err
+	}
+
+	user.PasswordHash = string(passwordHash)
+
+	newPassword, err := s.db.ChangePassword(user)
+	if err != nil {
+		return newPassword, err
+	}
+	return newPassword, nil
+}
+
+func (s *AuthService) Logout(tokenString string, exp time.Duration) error {
+	ctx := context.Background()
+	return s.rdb.SetKey(ctx, fmt.Sprintf("blacklist_token:%s", tokenString), "blacklisted", exp)
 }

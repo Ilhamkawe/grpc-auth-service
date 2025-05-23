@@ -3,6 +3,7 @@ package application
 import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
+	"time"
 )
 
 type JwtService struct {
@@ -18,6 +19,8 @@ func (s *JwtService) GenerateToken(UserID int) (string, error) {
 	claim := jwt.MapClaims{}
 
 	claim["user_id"] = UserID
+	claim["iat"] = time.Now().Unix() // Waktu pembuatan token
+	claim["exp"] = time.Now().Add(24 * time.Hour).Unix()
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 

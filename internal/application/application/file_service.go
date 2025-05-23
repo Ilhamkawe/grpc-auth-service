@@ -1,4 +1,4 @@
-package file
+package application
 
 import (
 	"bytes"
@@ -6,19 +6,19 @@ import (
 	"path/filepath"
 )
 
-type File struct {
+type FileService struct {
 	FilePath   string
 	buffer     *bytes.Buffer
 	OutputFile *os.File
 }
 
-func NewFile() *File {
-	return &File{
+func NewFileService() *FileService {
+	return &FileService{
 		buffer: &bytes.Buffer{},
 	}
 }
 
-func (f *File) SetFile(fileName, path string) error {
+func (f *FileService) SetFile(fileName, path string) error {
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func (f *File) SetFile(fileName, path string) error {
 	return nil
 }
 
-func (f *File) Write(chunk []byte) error {
+func (f *FileService) Write(chunk []byte) error {
 
 	if f.OutputFile == nil {
 		return nil
@@ -45,6 +45,6 @@ func (f *File) Write(chunk []byte) error {
 	return err
 }
 
-func (f *File) Close() error {
+func (f *FileService) Close() error {
 	return f.OutputFile.Close()
 }
