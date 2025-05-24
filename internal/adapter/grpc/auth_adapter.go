@@ -3,18 +3,18 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"io"
+	"path/filepath"
+	"time"
+
 	protoAuth "github.com/Ilhamkawe/crowdfunding-proto/protogen/go/auth"
-	"github.com/Ilhamkawe/grpc-auth-service/internal/adapter/database"
-	app "github.com/Ilhamkawe/grpc-auth-service/internal/application/application"
 	"github.com/Ilhamkawe/grpc-auth-service/internal/application/domain/auth"
 	"github.com/Ilhamkawe/grpc-auth-service/internal/application/helper/logger"
+	app "github.com/Ilhamkawe/grpc-auth-service/internal/application/service"
 	"github.com/Ilhamkawe/grpc-auth-service/internal/interceptor"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"io"
-	"path/filepath"
-	"time"
 )
 
 func (a *GrpcAdapter) RegisterUser(ctx context.Context, req *protoAuth.RegisterUserRequest) (*protoAuth.User, error) {
@@ -150,7 +150,7 @@ func (a *GrpcAdapter) UploadAvatar(stream protoAuth.AuthService_UploadAvatarServ
 
 func (a *GrpcAdapter) FetchUser(ctx context.Context, req *protoAuth.SendID) (*protoAuth.User, error) {
 
-	currentUser, ok := ctx.Value(interceptor.CurrentUserKey).(database.User) // Sesuaikan dengan tipe user Anda\
+	currentUser, ok := ctx.Value(interceptor.CurrentUserKey).(auth.User) // Sesuaikan dengan tipe user Anda\
 
 	fmt.Println(currentUser)
 	if !ok {
@@ -172,7 +172,7 @@ func (a *GrpcAdapter) FetchUser(ctx context.Context, req *protoAuth.SendID) (*pr
 }
 
 func (a *GrpcAdapter) Logout(ctx context.Context, _ *emptypb.Empty) (*protoAuth.BooleanResponse, error) {
-	currentUser, ok := ctx.Value(interceptor.CurrentUserKey).(database.User) // Sesuaikan dengan tipe user Anda
+	currentUser, ok := ctx.Value(interceptor.CurrentUserKey).(auth.User) // Sesuaikan dengan tipe user Anda
 
 	if !ok {
 		return nil, status.Errorf(
@@ -205,7 +205,7 @@ func (a *GrpcAdapter) ChangePassword(ctx context.Context, req *protoAuth.ChangeP
 
 	const currentUserKey = contextKey("currentUser")
 
-	currentUser, ok := ctx.Value(currentUserKey).(*database.User) // Sesuaikan dengan tipe user Anda
+	currentUser, ok := ctx.Value(currentUserKey).(*auth.User) // Sesuaikan dengan tipe user Anda
 	if !ok {
 		return nil, status.Errorf(
 			codes.FailedPrecondition,

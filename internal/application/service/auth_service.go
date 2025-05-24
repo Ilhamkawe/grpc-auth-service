@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Ilhamkawe/grpc-auth-service/internal/adapter/database"
+	"time"
+
+	"github.com/Ilhamkawe/grpc-auth-service/internal/adapter/database/postgres/user"
 	"github.com/Ilhamkawe/grpc-auth-service/internal/application/domain/auth"
+	"github.com/Ilhamkawe/grpc-auth-service/internal/application/helper/formatter"
 	"github.com/Ilhamkawe/grpc-auth-service/internal/port"
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 type AuthService struct {
@@ -23,8 +25,9 @@ func NewAuthService(dbPort port.AuthDatabasePort, rdbPort port.JwtRedisPort) *Au
 	}
 }
 
-func (s *AuthService) RegisterUser(req auth.RegisterInputUser) (database.User, error) {
-	user := database.User{}
+func (s *AuthService) RegisterUser(req auth.RegisterInputUser) (auth.User, error) {
+	newUser := auth.User{}
+	user := user.User{}
 	user.Name = req.Name
 	user.Occupation = req.Occupation
 	user.AvatarFileName = "images/default-user.jpg"
@@ -32,13 +35,13 @@ func (s *AuthService) RegisterUser(req auth.RegisterInputUser) (database.User, e
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.MinCost)
 	if err != nil {
-		return user, err
+		return newUser, err
 	}
 
 	user.PasswordHash = string(passwordHash)
 	user.Role = "User"
 
-	newUser, err := s.db.Save(user)
+	newUser, err = s.db.Save(user)
 
 	if err != nil {
 		return newUser, err
@@ -47,7 +50,7 @@ func (s *AuthService) RegisterUser(req auth.RegisterInputUser) (database.User, e
 	return newUser, nil
 }
 
-func (s *AuthService) Login(req auth.LoginInput) (database.User, error) {
+func (s *AuthService) Login(req auth.LoginInput) (auth.User, error) {
 	email := req.Email
 	password := req.Password
 
@@ -69,7 +72,7 @@ func (s *AuthService) Login(req auth.LoginInput) (database.User, error) {
 	return user, nil
 }
 
-func (s *AuthService) UpdateUserInfo(id int, req auth.UpdateInfoUserInput) (database.User, error) {
+func (s *AuthService) UpdateUserInfo(id int, req auth.UpdateInfoUserInput) (auth.User, error) {
 	user, err := s.db.FindByID(id)
 
 	if err != nil {
@@ -79,7 +82,7 @@ func (s *AuthService) UpdateUserInfo(id int, req auth.UpdateInfoUserInput) (data
 	user.Name = req.Name
 	user.Occupation = req.Occupation
 
-	updatedUser, err := s.db.Update(user)
+	updatedUser, err := s.db.Update(formatter.ToDBUser(user))
 	if err != nil {
 		return updatedUser, err
 	}
@@ -103,7 +106,7 @@ func (s *AuthService) IsEmailAvailable(req auth.CheckEmailInput) (bool, error) {
 	return false, nil
 }
 
-func (s *AuthService) GetUserByID(id int) (database.User, error) {
+func (s *AuthService) GetUserByID(id int) (auth.User, error) {
 	user, err := s.db.FindByID(id)
 	if err != nil {
 		return user, err
@@ -125,7 +128,7 @@ func (s *AuthService) GetUserByID(id int) (database.User, error) {
 //	return users, nil
 //}
 
-func (s *AuthService) ChangePassword(input auth.ChangePasswordInput) (database.User, error) {
+func (s *AuthService) ChangePassword(input auth.ChangePasswordInput) (auth.User, error) {
 	user, err := s.db.FindByID(input.ID)
 
 	if err != nil {
@@ -139,7 +142,7 @@ func (s *AuthService) ChangePassword(input auth.ChangePasswordInput) (database.U
 
 	user.PasswordHash = string(passwordHash)
 
-	newPassword, err := s.db.ChangePassword(user)
+	newPassword, err := s.db.ChangePassword(formatter.ToDBUser(user))
 	if err != nil {
 		return newPassword, err
 	}

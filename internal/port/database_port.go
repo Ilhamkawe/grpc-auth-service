@@ -2,16 +2,18 @@ package port
 
 import (
 	"context"
-	db "github.com/Ilhamkawe/grpc-auth-service/internal/adapter/database"
 	"time"
+
+	"github.com/Ilhamkawe/grpc-auth-service/internal/adapter/database/postgres/user"
+	"github.com/Ilhamkawe/grpc-auth-service/internal/application/domain/auth"
 )
 
 type AuthDatabasePort interface {
-	Save(user db.User) (db.User, error)
-	FindByEmail(email string) (db.User, error)
-	FindByID(id int) (db.User, error)
-	Update(user db.User) (db.User, error)
-	ChangePassword(user db.User) (db.User, error)
+	Save(user user.User) (auth.User, error)
+	FindByEmail(email string) (auth.User, error)
+	FindByID(id int) (auth.User, error)
+	Update(user user.User) (auth.User, error)
+	ChangePassword(user user.User) (auth.User, error)
 	//GetUserByID(ID int) (db.User, error)
 }
 type JwtRedisPort interface {

@@ -1,33 +1,14 @@
-package database
+package redis
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+
 	"github.com/redis/go-redis/v9"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
-type DatabaseAdapter struct {
-	db *gorm.DB
-}
-
-func NewDatabaseAdapter(conn *sql.DB) (*DatabaseAdapter, error) {
-	db, err := gorm.Open(postgres.New(postgres.Config{
-		Conn: conn,
-	}), &gorm.Config{})
-
-	if err != nil {
-		return nil, fmt.Errorf("Can't connect database (gorm) : %v", err)
-	}
-	return &DatabaseAdapter{
-		db: db,
-	}, nil
-}
-
 type JwtRedisAdapter struct {
-	rdb *redis.Client
+	RDB *redis.Client
 }
 
 func NewJwtRedisAdapter(addr, username, password string, db int) (*JwtRedisAdapter, error) {
@@ -46,6 +27,6 @@ func NewJwtRedisAdapter(addr, username, password string, db int) (*JwtRedisAdapt
 	}
 
 	return &JwtRedisAdapter{
-		rdb: rdb,
+		RDB: rdb,
 	}, nil
 }

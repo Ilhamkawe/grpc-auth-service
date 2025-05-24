@@ -1,19 +1,19 @@
 package port
 
 import (
-	"github.com/Ilhamkawe/grpc-auth-service/internal/adapter/database"
+	"time"
+
 	"github.com/Ilhamkawe/grpc-auth-service/internal/application/domain/auth"
 	"github.com/dgrijalva/jwt-go"
-	"time"
 )
 
 type AuthServicePort interface {
-	RegisterUser(req auth.RegisterInputUser) (database.User, error)
-	Login(req auth.LoginInput) (database.User, error)
-	UpdateUserInfo(id int, req auth.UpdateInfoUserInput) (database.User, error)
+	RegisterUser(req auth.RegisterInputUser) (auth.User, error)
+	Login(req auth.LoginInput) (auth.User, error)
+	UpdateUserInfo(id int, req auth.UpdateInfoUserInput) (auth.User, error)
 	IsEmailAvailable(req auth.CheckEmailInput) (bool, error)
-	GetUserByID(ID int) (database.User, error)
-	ChangePassword(req auth.ChangePasswordInput) (database.User, error)
+	GetUserByID(ID int) (auth.User, error)
+	ChangePassword(req auth.ChangePasswordInput) (auth.User, error)
 	Logout(tokenString string, exp time.Duration) error
 }
 

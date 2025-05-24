@@ -2,10 +2,12 @@ package main
 
 import (
 	"database/sql"
-	myDb "github.com/Ilhamkawe/grpc-auth-service/internal/adapter/database"
-	mygrpc "github.com/Ilhamkawe/grpc-auth-service/internal/adapter/grpc"
-	app "github.com/Ilhamkawe/grpc-auth-service/internal/application/application"
 	"log"
+
+	myDb "github.com/Ilhamkawe/grpc-auth-service/internal/adapter/database/postgres/user"
+	myRedis "github.com/Ilhamkawe/grpc-auth-service/internal/adapter/database/redis"
+	mygrpc "github.com/Ilhamkawe/grpc-auth-service/internal/adapter/grpc"
+	app "github.com/Ilhamkawe/grpc-auth-service/internal/application/service"
 )
 
 func main() {
@@ -24,7 +26,7 @@ func main() {
 		log.Fatalln("Can't create database adapter :", err)
 	}
 
-	rdbAdapter, err := myDb.NewJwtRedisAdapter("localhost:6379", "", "", 0)
+	rdbAdapter, err := myRedis.NewJwtRedisAdapter("localhost:6379", "", "", 0)
 
 	if err != nil {
 		log.Fatalln("Can't create Redis database adapter :", err)
